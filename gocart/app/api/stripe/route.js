@@ -22,7 +22,7 @@ export async function POST(request){
 
         if(isPaid){
             //mark order as paid
-            (await Promise.all(orderIdsArray).map(async(orderId)=>{
+            await Promise.all(orderIdsArray.map(async(orderId)=>{
                 await prisma.order.update({
                     where: {id: orderId},
                     data: {isPaid: true}
