@@ -71,6 +71,7 @@ export async function POST(request) {
       ],
     });
 
+    // Create store - relation to user is automatically established via userId foreign key
     const newStore = await prisma.store.create({
       data: {
         userId,
@@ -84,14 +85,10 @@ export async function POST(request) {
       },
     });
 
-    //Link store to user
-    await prisma.user.update({
-      where: {
-        id: userId},  
-        data: { store: { connect: { id: newStore.id } } }
-    });
+    // Note: The relation between User and Store is automatically established
+    // via the userId foreign key. No need to manually connect.
     return NextResponse.json(
-      { message: "applied, waiting for approval" });
+      { message: "applied, waiting for approval", storeId: newStore.id });
   } catch (error) {
     console.error(error);
     return NextResponse.json(

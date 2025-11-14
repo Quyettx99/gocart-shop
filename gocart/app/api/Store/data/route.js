@@ -12,9 +12,9 @@ export async function GET(request) {
     }
 
     //get store info and inStock products with ratings
-    const store = await prisma.store.findUnique({
-      where: { username,isAction: true},
-      include: { Product:{include: {ratings: true}} },
+    const store = await prisma.store.findFirst({
+      where: { username,isActive: true},
+      include: { Product:{include: {rating: true}} },
     });
     if(!store){
         return NextResponse.json({error: "store not found"},{status: 400})
