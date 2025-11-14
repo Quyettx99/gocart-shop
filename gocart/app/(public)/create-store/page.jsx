@@ -42,7 +42,7 @@ export default function CreateStore() {
                 switch(data.status){
                     case 'approved':
                         setMessage("Your store has been approved, you can nơ add products to your store from dashboard")
-                        setTimeout(() =>router.push('/store'),5000)
+                        setTimeout(() =>router.push('/store'),500)
                             break;
                             case 'rejected':
                                 setMessage("Your store request has been rejected, you can contact support for more details")

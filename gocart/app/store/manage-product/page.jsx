@@ -24,7 +24,8 @@ export default function StoreManageProducts() {
                     Authorization: `Bearer ${token}`
                 }
             })
-            setProducts(data.products.sort((a,b)=>new data(b.createdAt)-new data(a.createdAt)))
+            setProducts(
+       data.products.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
         } catch (error) {
             toast.error(error?.response?.data?.message || error.message)
         }
