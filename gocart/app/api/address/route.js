@@ -13,7 +13,7 @@ export async function POST(request) {
         const newAddress =  await prisma.address.create({
             data: address
         })
-        return NextResponse.json({newAddress, message: "Address added successfully"})
+        return NextResponse.json({newAddress, message: "Thêm địa chỉ thành công"})
     } catch (error) {
         console.error(error);
         return NextResponse.json({error: error.message || error.message},{status: 500})

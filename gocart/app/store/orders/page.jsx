@@ -1,11 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import Loading from "@/components/Loading";
-import { orderDummyData } from "@/assets/assets";
 import { useAuth } from "@clerk/nextjs";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { err } from "inngest/types";
 
 export default function StoreOrders() {
   const [orders, setOrders] = useState([]);
@@ -15,13 +13,19 @@ export default function StoreOrders() {
 
   const { getToken } = useAuth();
 
+ 
+  const orderStatusText = {
+    'ORDER_PLACED': 'Đã đặt hàng',
+    'PROCESSING': 'Đang xử lý',
+    'SHIPPED': 'Đã vận chuyển',
+    'DELIVERED': 'Đã giao hàng'
+  };
+
   const fetchOrders = async () => {
     try {
       const token = await getToken();
       const { data } = await axios.get("/api/store/orders", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       setOrders(data.orders);
     } catch (error) {
@@ -32,16 +36,19 @@ export default function StoreOrders() {
   };
 
   const updateOrderStatus = async (orderId, status) => {
-     try {
+    try {
       const token = await getToken();
-      await axios.post("/api/store/orders", {orderId, status},{
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setOrders(prev => prev.map(order => 
-        order.id === orderId ? {...order, status} : order));
-        toast.success("Order status successfully");
+      await axios.post(
+        "/api/store/orders",
+        { orderId, status },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setOrders((prev) =>
+        prev.map((order) =>
+          order.id === orderId ? { ...order, status } : order
+        )
+      );
+      toast.success("Cập nhật trạng thái đơn hàng thành công");
     } catch (error) {
       toast.error(error?.response?.data?.message || error.message);
     }
@@ -66,23 +73,23 @@ export default function StoreOrders() {
   return (
     <>
       <h1 className="text-2xl text-slate-500 mb-5">
-        Store <span className="text-slate-800 font-medium">Orders</span>
+        Store <span className="text-slate-800 font-medium">Đơn hàng</span>
       </h1>
       {orders.length === 0 ? (
-        <p>No orders found</p>
+        <p>Không tìm thấy đơn hàng nào</p>
       ) : (
         <div className="overflow-x-auto max-w-4xl rounded-md shadow border border-gray-200">
           <table className="w-full text-sm text-left text-gray-600">
             <thead className="bg-gray-50 text-gray-700 text-xs uppercase tracking-wider">
               <tr>
                 {[
-                  "Sr. No.",
-                  "Customer",
-                  "Total",
-                  "Payment",
-                  "Coupon",
-                  "Status",
-                  "Date",
+                  "STT",
+                  "Khách hàng",
+                  "Tổng tiền",
+                  "Thanh toán",
+                  "Mã giảm giá",
+                  "Trạng thái",
+                  "Ngày tạo",
                 ].map((heading, i) => (
                   <th key={i} className="px-4 py-3">
                     {heading}
@@ -114,9 +121,7 @@ export default function StoreOrders() {
                   </td>
                   <td
                     className="px-4 py-3"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
+                    onClick={(e) => e.stopPropagation()}
                   >
                     <select
                       value={order.status}
@@ -125,10 +130,11 @@ export default function StoreOrders() {
                       }
                       className="border-gray-300 rounded-md text-sm focus:ring focus:ring-blue-200"
                     >
-                      <option value="ORDER_PLACED">ORDER_PLACED</option>
-                      <option value="PROCESSING">PROCESSING</option>
-                      <option value="SHIPPED">SHIPPED</option>
-                      <option value="DELIVERED">DELIVERED</option>
+                      {Object.entries(orderStatusText).map(([value, label]) => (
+                        <option key={value} value={value}>
+                          {label}
+                        </option>
+                      ))}
                     </select>
                   </td>
                   <td className="px-4 py-3 text-gray-500">
@@ -152,14 +158,14 @@ export default function StoreOrders() {
             className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 relative"
           >
             <h2 className="text-xl font-semibold text-slate-900 mb-4 text-center">
-              Order Details
+              Chi tiết đơn hàng
             </h2>
 
             {/* Customer Details */}
             <div className="mb-4">
-              <h3 className="font-semibold mb-2">Customer Details</h3>
+              <h3 className="font-semibold mb-2">Thông tin khách hàng</h3>
               <p>
-                <span className="text-green-700">Name:</span>{" "}
+                <span className="text-green-700">Tên:</span>{" "}
                 {selectedOrder.user?.name}
               </p>
               <p>
@@ -167,18 +173,18 @@ export default function StoreOrders() {
                 {selectedOrder.user?.email}
               </p>
               <p>
-                <span className="text-green-700">Phone:</span>{" "}
+                <span className="text-green-700">SĐT:</span>{" "}
                 {selectedOrder.address?.phone}
               </p>
               <p>
-                <span className="text-green-700">Address:</span>{" "}
+                <span className="text-green-700">Địa chỉ:</span>{" "}
                 {`${selectedOrder.address?.street}, ${selectedOrder.address?.city}, ${selectedOrder.address?.state}, ${selectedOrder.address?.zip}, ${selectedOrder.address?.country}`}
               </p>
             </div>
 
             {/* Products */}
             <div className="mb-4">
-              <h3 className="font-semibold mb-2">Products</h3>
+              <h3 className="font-semibold mb-2">Sản phẩm</h3>
               <div className="space-y-2">
                 {selectedOrder.orderItems.map((item, i) => (
                   <div
@@ -194,8 +200,8 @@ export default function StoreOrders() {
                     />
                     <div className="flex-1">
                       <p className="text-slate-800">{item.product?.name}</p>
-                      <p>Qty: {item.quantity}</p>
-                      <p>Price: ${item.price}</p>
+                      <p>Số lượng: {item.quantity}</p>
+                      <p>Giá: ${item.price}</p>
                     </div>
                   </div>
                 ))}
@@ -205,26 +211,25 @@ export default function StoreOrders() {
             {/* Payment & Status */}
             <div className="mb-4">
               <p>
-                <span className="text-green-700">Payment Method:</span>{" "}
+                <span className="text-green-700">Phương thức thanh toán:</span>{" "}
                 {selectedOrder.paymentMethod}
               </p>
               <p>
-                <span className="text-green-700">Paid:</span>{" "}
-                {selectedOrder.isPaid ? "Yes" : "No"}
+                <span className="text-green-700">Đã thanh toán:</span>{" "}
+                {selectedOrder.isPaid ? "Có" : "Chưa"}
               </p>
               {selectedOrder.isCouponUsed && (
                 <p>
-                  <span className="text-green-700">Coupon:</span>{" "}
-                  {selectedOrder.coupon.code} ({selectedOrder.coupon.discount}%
-                  off)
+                  <span className="text-green-700">Mã giảm giá:</span>{" "}
+                  {selectedOrder.coupon.code} ({selectedOrder.coupon.discount}%)
                 </p>
               )}
               <p>
-                <span className="text-green-700">Status:</span>{" "}
-                {selectedOrder.status}
+                <span className="text-green-700">Trạng thái:</span>{" "}
+                {orderStatusText[selectedOrder.status] || selectedOrder.status}
               </p>
               <p>
-                <span className="text-green-700">Order Date:</span>{" "}
+                <span className="text-green-700">Ngày đặt:</span>{" "}
                 {new Date(selectedOrder.createdAt).toLocaleString()}
               </p>
             </div>
@@ -235,7 +240,7 @@ export default function StoreOrders() {
                 onClick={closeModal}
                 className="px-4 py-2 bg-slate-200 rounded hover:bg-slate-300"
               >
-                Close
+                Đóng
               </button>
             </div>
           </div>

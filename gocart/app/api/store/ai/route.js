@@ -3,68 +3,73 @@ import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { openai } from "@/configs/openai";
 
-async function main(base64Image,mimeType){
-    const messages = [
-        {
-            "role": "system",
-            "content": `You are a product listing assistant for an e-commerce store.
-            Your job is to analyze an image of a product and generate structured data.
-            
-            Respond ONLY with raw JSON (no code block, no markdown, no explanation).
-            The JSON must strictly follow this schema: 
-            
-            {
-            "name": string,               //Short product name
-            "description": string,        //Marketing-friendly
-            description of the product
-            }`
-        },
+async function main(base64Image, mimeType) {
+  const messages = [
     {
-      "role": "user",
-      "content": [
+      role: "system",
+      content: `You are a product listing assistant for an e-commerce store.
+      Your job is to analyze an image of a product and generate structured data.
+
+      Respond ONLY with raw JSON (no code block, no markdown, no explanation).
+      The JSON must strictly follow this schema: 
+
+      {
+        "name": string,               // Tên sản phẩm ngắn
+        "description": string         // Mô tả marketing-friendly của sản phẩm
+      }`,
+    },
+    {
+      role: "user",
+      content: [
         {
-          "type": "text",
-          "text": "Analyze this image and return name + description.",
+          type: "text",
+          text: "Analyze this image and return name + description.",
         },
         {
-          "type": "image_url",
-          "image_url": {
-            "url": `data:${mimeType};base64,${base64Image}`
+          type: "image_url",
+          image_url: {
+            url: `data:${mimeType};base64,${base64Image}`,
           },
         },
       ],
-    }
+    },
   ];
-   const response = await openai.chat.completions.create({
-      model: process.env.OPENAI_MODEL,
-      messages,
-    });
 
-    const raw = response.choices[0].message.content
+  const response = await openai.chat.completions.create({
+    model: process.env.OPENAI_MODEL,
+    messages,
+  });
 
-    //remove ```json or ``` wrappers if present
-    const cleaned = raw.replace(/```json|```/g,"").trim();
+  const raw = response.choices[0].message.content;
 
-    let parsed;
-    try {
-        parsed = JSON.parse(cleaned)
-    } catch (error) {
-        throw new Error("AI did not return valid JSON")
-    }
-    return parsed
+  // loại bỏ ```json hoặc ``` nếu có
+  const cleaned = raw.replace(/```json|```/g, "").trim();
+
+  let parsed;
+  try {
+    parsed = JSON.parse(cleaned);
+  } catch (error) {
+    throw new Error("AI không trả về JSON hợp lệ");
+  }
+  return parsed;
 }
+
 export async function POST(request) {
-    try {
-        const {userId} = getAuth(request)
-        const isSeller = await authSeller(userId)
-        if(!isSeller){
-            return NextResponse.json({error: 'not authorized'},{status: 401})
-        }
-        const {base64Image,mimeType} = await request.json()
-        const result = await main(base64Image, mimeType)
-        return NextResponse.json({...result})
-    } catch (error) {
-        console.error(error)
-        return NextResponse.json({error: error.code || error.message},{status: 400})
+  try {
+    const { userId } = getAuth(request);
+    const isSeller = await authSeller(userId);
+    if (!isSeller) {
+      return NextResponse.json({ error: "Không có quyền thực hiện" }, { status: 401 });
     }
+
+    const { base64Image, mimeType } = await request.json();
+    const result = await main(base64Image, mimeType);
+    return NextResponse.json({ ...result });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { error: error.code || error.message || "Có lỗi xảy ra" },
+      { status: 400 }
+    );
+  }
 }

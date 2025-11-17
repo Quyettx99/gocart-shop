@@ -3,18 +3,19 @@ import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import authSeller from "@/middlewares/authSeller";
 
-
 //toggle stock of a product
 export async function POST(request) {
     try {
         const { userId } = getAuth(request);
         const { productId } = await request.json();
+
         if(!productId){
-            return NextResponse.json({error: "missing product id"},{status: 400})
+            return NextResponse.json({error: "Thiếu ID sản phẩm"},{status: 400})
         }
+
         const storeId = await authSeller(userId);
         if(!storeId){
-            return NextResponse.json({error: "not unauthorized"},{status: 401})
+            return NextResponse.json({error: "Bạn không có quyền thực hiện hành động này"},{status: 401})
         }
 
         //check if product exists
@@ -22,16 +23,17 @@ export async function POST(request) {
             where: {id: productId, storeId}
         })
         if(!product){
-            return NextResponse.json({error: "product not found"},{status: 404})
+            return NextResponse.json({error: "Không tìm thấy sản phẩm"},{status: 404})
         }
+
         await prisma.product.update({
             where: {id: productId},
             data: {
                 inStock: !product.inStock
             }
         })
-        return NextResponse.json({message: "product stock updated successfully"
-        })
+
+        return NextResponse.json({message: "Cập nhật trạng thái kho thành công"})
     } catch (error) {
         console.error(error);
         return NextResponse.json({error: error.code || error.message},{status: 400})

@@ -17,16 +17,20 @@ const RatingModal = ({ ratingModal, setRatingModal }) => {
     const [review, setReview] = useState('');
 
     const handleSubmit = async () => {
-        if (rating < 0 || rating > 5) {
-            return toast('Please select a rating');
+        if (rating < 1 || rating > 5) {
+            return toast('Vui lòng chọn số sao từ 1 đến 5');
         }
         if (review.length < 5) {
-            return toast('write a short review');
+            return toast('Vui lòng viết đánh giá ít nhất 5 ký tự');
         }
         try {
             const token = await getToken()
-            const {data} = await axios.post('/api/rating',{productId:ratingModal.productId,
-            orderId: ratingModal.orderId,rating,review},{
+            const {data} = await axios.post('/api/rating',{
+                productId:ratingModal.productId,
+                orderId: ratingModal.orderId,
+                rating,
+                review
+            },{
                 headers: { Authorization: `Bearer ${token}` }
             })
             dispatch(addRating(data.rating))
@@ -43,7 +47,7 @@ const RatingModal = ({ ratingModal, setRatingModal }) => {
                 <button onClick={() => setRatingModal(null)} className='absolute top-3 right-3 text-gray-500 hover:text-gray-700'>
                     <XIcon size={20} />
                 </button>
-                <h2 className='text-xl font-medium text-slate-600 mb-4'>Rate Product</h2>
+                <h2 className='text-xl font-medium text-slate-600 mb-4'>Đánh giá sản phẩm</h2>
                 <div className='flex items-center justify-center mb-4'>
                     {Array.from({ length: 5 }, (_, i) => (
                         <Star
@@ -55,13 +59,13 @@ const RatingModal = ({ ratingModal, setRatingModal }) => {
                 </div>
                 <textarea
                     className='w-full p-2 border border-gray-300 rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-green-400'
-                    placeholder='Write your review (optional)'
+                    placeholder='Viết đánh giá của bạn (tùy chọn)'
                     rows='4'
                     value={review}
                     onChange={(e) => setReview(e.target.value)}
                 ></textarea>
-                <button onClick={e => toast.promise(handleSubmit(), { loading: 'Submitting...' })} className='w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-600 transition'>
-                    Submit Rating
+                <button onClick={e => toast.promise(handleSubmit(), { loading: 'Đang gửi đánh giá...' })} className='w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-600 transition'>
+                    Gửi đánh giá
                 </button>
             </div>
         </div>

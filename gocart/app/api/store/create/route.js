@@ -3,11 +3,11 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import imagekit from "@/configs/imageKit";
 
-//Create the store
+// Tạo cửa hàng mới
 export async function POST(request) {
   try {
     const { userId } = getAuth(request);
-    //get the data from the request
+    // Lấy dữ liệu từ request
     const formData = await request.formData();
     const name = formData.get("name");
     const username = formData.get("username");
@@ -27,38 +27,36 @@ export async function POST(request) {
       !image
     ) {
       return NextResponse.json(
-        { error: "missing store info" },
+        { error: "Thiếu thông tin cửa hàng" },
         { status: 400 }
       );
     }
-    //check is user have already registered a store
+
+    // Kiểm tra người dùng đã có cửa hàng chưa
     const store = await prisma.store.findFirst({
-      where: {
-        userId: userId,
-      },
+      where: { userId }
     });
 
-    //if store is already registered then send status of store exists
     if (store) {
       return NextResponse.json({ status: store.status });
     }
-    //check is username is already taken
+
+    // Kiểm tra tên đăng nhập cửa hàng đã tồn tại chưa
     const isUsernameTaken = await prisma.store.findFirst({
-      where: {
-        username: username.toLowerCase(),
-      },
+      where: { username: username.toLowerCase() }
     });
     if (isUsernameTaken) {
       return NextResponse.json(
-        { error: "username is already taken" },
+        { error: "Tên đăng nhập cửa hàng đã được sử dụng" },
         { status: 400 }
       );
     }
-    //image upload to imagekit
+
+    // Upload logo lên ImageKit
     const buffer = Buffer.from(await image.arrayBuffer());
     const response = await imagekit.upload({
-      file: buffer, //required
-      fileName: image.name, //required
+      file: buffer,
+      fileName: image.name,
       folder: "logos",
     });
 
@@ -71,7 +69,7 @@ export async function POST(request) {
       ],
     });
 
-    // Create store - relation to user is automatically established via userId foreign key
+    // Tạo cửa hàng mới
     const newStore = await prisma.store.create({
       data: {
         userId,
@@ -85,10 +83,11 @@ export async function POST(request) {
       },
     });
 
-    // Note: The relation between User and Store is automatically established
-    // via the userId foreign key. No need to manually connect.
-    return NextResponse.json(
-      { message: "applied, waiting for approval", storeId: newStore.id });
+    return NextResponse.json({
+      message: "Đã gửi yêu cầu, đang chờ phê duyệt",
+      storeId: newStore.id
+    });
+
   } catch (error) {
     console.error(error);
     return NextResponse.json(
@@ -98,23 +97,21 @@ export async function POST(request) {
   }
 }
 
-//check is user have already registered a store if yes then return the store status
+// Kiểm tra người dùng đã đăng ký cửa hàng chưa
 export async function GET(request) {
   try {
     const { userId } = getAuth(request);
 
-    //check is user have already registered a store
     const store = await prisma.store.findFirst({
-      where: {
-        userId: userId,
-      },
+      where: { userId }
     });
 
-    //if store is already registered then send status of store exists
     if (store) {
       return NextResponse.json({ status: store.status });
     }
-    return NextResponse.json({ status: "no-registered" });
+
+    return NextResponse.json({ status: "chưa đăng ký" });
+
   } catch (error) {
     console.error(error);
     return NextResponse.json(

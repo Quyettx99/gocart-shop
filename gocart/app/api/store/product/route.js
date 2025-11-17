@@ -4,15 +4,16 @@ import { NextResponse } from "next/server";
 import imagekit from "@/configs/imageKit";
 import prisma from "@/lib/prisma";
 
-//add a new product
+// Thêm sản phẩm mới
 export async function POST(request) {
   try {
     const { userId } = getAuth(request);
     const storeId = await authSeller(userId);
     if (!storeId) {
-      return NextResponse.json({ error: "not unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Không có quyền truy cập" }, { status: 401 });
     }
-    //get the data from the request
+
+    // Lấy dữ liệu từ request
     const formData = await request.formData();
     const name = formData.get("name");
     const description = formData.get("description");
@@ -30,17 +31,18 @@ export async function POST(request) {
       images.length < 1
     ) {
       return NextResponse.json(
-        { error: "missing product info" },
+        { error: "Thiếu thông tin sản phẩm" },
         { status: 400 }
       );
     }
-    //upload images to imagekit
+
+    // Upload ảnh lên ImageKit
     const imageUrls = await Promise.all(
       images.map(async (image) => {
         const buffer = Buffer.from(await image.arrayBuffer());
         const response = await imagekit.upload({
-          file: buffer, //required
-          fileName: image.name, //required
+          file: buffer,
+          fileName: image.name,
           folder: "products",
         });
 
@@ -55,6 +57,7 @@ export async function POST(request) {
         return url;
       })
     );
+
     await prisma.product.create({
       data: {
         name,
@@ -66,7 +69,8 @@ export async function POST(request) {
         storeId,
       },
     });
-    return NextResponse.json({ message: "product added successfully" });
+
+    return NextResponse.json({ message: "Sản phẩm đã được thêm thành công" });
   } catch (error) {
     console.error(error);
     return NextResponse.json(
@@ -76,17 +80,19 @@ export async function POST(request) {
   }
 }
 
-//get all products for a seller
+// Lấy tất cả sản phẩm của cửa hàng
 export async function GET(request) {
   try {
     const { userId } = getAuth(request);
     const storeId = await authSeller(userId);
     if (!storeId) {
-      return NextResponse.json({ error: "not unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Không có quyền truy cập" }, { status: 401 });
     }
+
     const products = await prisma.product.findMany({
       where: { storeId },
     });
+
     return NextResponse.json({ products });
   } catch (error) {
     console.error(error);

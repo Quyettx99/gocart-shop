@@ -9,13 +9,13 @@ export async function POST(request) {
     try {
         const {userId,has}= getAuth(request)
         if(!userId){
-            return NextResponse.json({error: "Not authorized"},{status: 401})
+            return NextResponse.json({error: "Chưa đăng nhập"},{status: 401})
         }
         const {addressId,items,couponCode,paymentMethod} = await request.json()
 
-        //Check if all required fields are present
+        //Kiểm tra các trường bắt buộc
         if(!addressId || !items || items.length === 0 || !paymentMethod || !Array.isArray(items)){
-            return NextResponse.json({error: "Missing required fields"},{status: 400})
+            return NextResponse.json({error: "Thiếu thông tin bắt buộc"},{status: 400})
         }
         let coupon = null
         if(couponCode){
@@ -23,27 +23,27 @@ export async function POST(request) {
             where:{code: couponCode}
         }) 
         if(!coupon){
-            return NextResponse.json({error: "Coupon not found"},{status: 400})
+            return NextResponse.json({error: "Mã giảm giá không tồn tại"},{status: 400})
         }
      }
          
-       //Check if coupon is applicable for new users
+       //Kiểm tra coupon chỉ áp dụng cho người dùng mới
         if(couponCode && coupon.forNewUser){
             const userorders = await prisma.order.findMany({where:{userId}})
             if(userorders.length > 0){
-                return NextResponse.json({error: "Coupon vail for new users"},{status:  404})
+                return NextResponse.json({error: "Mã giảm giá chỉ áp dụng cho người dùng mới"},{status:  404})
             }
         }
         const isPlusMember = has({plan: 'plus'})
 
-        //Check if Coupon is applicable for members
+        //Kiểm tra coupon chỉ áp dụng cho thành viên
         if(couponCode && coupon.forMember){   
             if(!isPlusMember){
-                return NextResponse.json({error: "Coupon valid for members only"},{status: 400})
+                return NextResponse.json({error: "Mã giảm giá chỉ áp dụng cho thành viên"},{status: 400})
             }
         }
 
-        //Group orders by storeId using  a Map
+        //Nhóm các sản phẩm theo storeId
         const ordersByStore = new Map();
         for(const item of items){
             const product = await prisma.product.findUnique({where:{id: item.id}})
@@ -57,7 +57,7 @@ export async function POST(request) {
         let fullAmount = 0
         let isShippingFeeAdded = false
 
-        //Create orders for each store
+        //Tạo đơn hàng cho từng cửa hàng
         for(const [storeId,sellerItems] of ordersByStore.entries() ){
             let total = sellerItems.reduce((acc,item)=>acc+(item.price * item.quantity),0)
             if(couponCode){
@@ -98,13 +98,13 @@ export async function POST(request) {
                     price_data:{
                         currency: 'usd',
                         product_data:{
-                            name: 'Order Payment',
+                            name: 'Thanh toán đơn hàng',
                         },
                         unit_amount: Math.round(fullAmount * 100),
                     },
                     quantity: 1,
                 }],
-                expires_at: Math.floor(Date.now() / 1000) + 30 * 60, //current time + 30 minutes
+                expires_at: Math.floor(Date.now() / 1000) + 30 * 60, //thời gian hiện tại + 30 phút
                 mode: 'payment',
                 success_url: `${origin}/loading?nextUrl=orders`,
                 cancel_url: `${origin}/cart`,
@@ -116,19 +116,19 @@ export async function POST(request) {
             return NextResponse.json({session})
         }
 
-        //clear the cart
+        //Xóa giỏ hàng
         await prisma.user.update({
             where:{id: userId},
             data:{cart:{}}
         })
-        return NextResponse.json({message: 'Orders Placed Successfully'})
+        return NextResponse.json({message: 'Đặt hàng thành công'})
     } catch (error) {
         console.error(error)
         return NextResponse.json({error: error.code || error.message},{status: 400})
     }
 }
 
-//Get all orders for a user
+//Lấy tất cả đơn hàng của user
 export async function GET(request) {
     try {
         const {userId} = getAuth(request)

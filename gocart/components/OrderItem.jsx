@@ -7,11 +7,26 @@ import { useState } from "react";
 import RatingModal from "./RatingModal";
 
 const OrderItem = ({ order }) => {
-
     const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '$';
     const [ratingModal, setRatingModal] = useState(null);
-
     const { ratings } = useSelector(state => state.rating);
+
+    const orderStatusText = {
+        'ORDER_PLACED': 'Đã đặt hàng',
+        'PROCESSING': 'Đang xử lý',
+        'SHIPPED': 'Đã vận chuyển',
+        'DELIVERED': 'Đã giao hàng'
+    };
+
+    // Hàm lấy màu sắc cho trạng thái
+    const getStatusColor = (status) => {
+        const statusUpper = status.toUpperCase();
+        if (statusUpper === 'ORDER_PLACED') return 'text-yellow-500 bg-yellow-100';
+        if (statusUpper === 'PROCESSING') return 'text-blue-500 bg-blue-100';
+        if (statusUpper === 'SHIPPED') return 'text-orange-500 bg-orange-100';
+        if (statusUpper === 'DELIVERED') return 'text-green-500 bg-green-100';
+        return 'text-slate-500 bg-slate-100';
+    };
 
     return (
         <>
@@ -31,13 +46,16 @@ const OrderItem = ({ order }) => {
                                 </div>
                                 <div className="flex flex-col justify-center text-sm">
                                     <p className="font-medium text-slate-600 text-base">{item.product.name}</p>
-                                    <p>{currency}{item.price} Qty : {item.quantity} </p>
-                                    <p className="mb-1">{new Date(order.createdAt).toDateString()}</p>
+                                    <p>{currency}{item.price} Số lượng: {item.quantity} </p>
+                                    <p className="mb-1">{new Date(order.createdAt).toLocaleDateString('vi-VN')}</p>
                                     <div>
                                         {ratings.find(rating => order.id === rating.orderId && item.product.id === rating.productId)
                                             ? <Rating value={ratings.find(rating => order.id === rating.orderId && item.product.id === rating.productId).rating} />
-                                            : <button onClick={() => setRatingModal({ orderId: order.id, productId: item.product.id })} className={`text-green-500 hover:bg-green-50 transition ${order.status !== "DELIVERED" && 'hidden'}`}>Rate Product</button>
-                                        }</div>
+                                            : <button onClick={() => setRatingModal({ orderId: order.id, productId: item.product.id })} className={`text-green-500 hover:bg-green-50 transition ${order.status.toUpperCase() !== "DELIVERED" && 'hidden'}`}>
+                                                Đánh giá sản phẩm
+                                              </button>
+                                        }
+                                    </div>
                                     {ratingModal && <RatingModal ratingModal={ratingModal} setRatingModal={setRatingModal} />}
                                 </div>
                             </div>
@@ -55,15 +73,10 @@ const OrderItem = ({ order }) => {
 
                 <td className="text-left space-y-2 text-sm max-md:hidden">
                     <div
-                        className={`flex items-center justify-center gap-1 rounded-full p-1 ${order.status === 'confirmed'
-                            ? 'text-yellow-500 bg-yellow-100'
-                            : order.status === 'delivered'
-                                ? 'text-green-500 bg-green-100'
-                                : 'text-slate-500 bg-slate-100'
-                            }`}
+                        className={`flex items-center justify-center gap-1 rounded-full p-1 ${getStatusColor(order.status)}`}
                     >
                         <DotIcon size={10} className="scale-250" />
-                        {order.status.split('_').join(' ').toLowerCase()}
+                        {orderStatusText[order.status.toUpperCase()] || order.status}
                     </div>
                 </td>
             </tr>
@@ -75,8 +88,8 @@ const OrderItem = ({ order }) => {
                     <p>{order.address.phone}</p>
                     <br />
                     <div className="flex items-center">
-                        <span className='text-center mx-auto px-6 py-1.5 rounded bg-green-100 text-green-700' >
-                            {order.status.replace(/_/g, ' ').toLowerCase()}
+                        <span className={`text-center mx-auto px-6 py-1.5 rounded ${getStatusColor(order.status)}`}>
+                            {orderStatusText[order.status.toUpperCase()] || order.status}
                         </span>
                     </div>
                 </td>

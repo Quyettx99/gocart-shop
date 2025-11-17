@@ -3,18 +3,18 @@ import authAdmin from "@/middlewares/authAdmin";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
-//get all approved stores
+//Lấy tất cả cửa hàng đã được duyệt
 export async function GET(request) {
   try {
     const { userId } = getAuth(request);
     const isAdmin = await authAdmin(userId);
 
     if (!isAdmin) {
-      return NextResponse.json({ error: "Not authorized" }, { status: 401 });
+      return NextResponse.json({ error: "Không có quyền" }, { status: 401 });
     }
 
     const stores = await prisma.store.findMany({
-      where: {status: 'approved'},
+      where: { status: 'approved' },
       include: { user: true },
     });
     return NextResponse.json({ stores });

@@ -4,23 +4,23 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { inngest } from "@/inngest/client";
 
-//add new coupon
+//Thêm coupon mới
 export async function POST(request) {
   try {
     const { userId } = getAuth(request);
     const isAdmin = await authAdmin(userId);
     if (!isAdmin) {
-      return NextResponse.json({ error: "Not authorized" }, { status: 401 });
+      return NextResponse.json({ error: "Không có quyền" }, { status: 401 });
     }
     const { coupon } = await request.json();
-    // Trim and convert to uppercase to ensure consistency
+    //Loại bỏ khoảng trắng và chuyển thành chữ hoa để đồng nhất
     coupon.code = coupon.code.trim().toUpperCase();
     await prisma.coupon
       .create({
         data: coupon,
       })
       .then(async (coupon) => {
-        //Run Inngest Sheduler function to delete coupon on expire
+        //Chạy Inngest Scheduler để xóa coupon khi hết hạn
         await inngest.send({
           name: "app/coupon.expired",
           data: {
@@ -29,7 +29,7 @@ export async function POST(request) {
           },
         });
       });
-    return NextResponse.json({ message: "Coupon created successfully" });
+    return NextResponse.json({ message: "Tạo coupon thành công" });
   } catch (error) {
     console.error(error);
     return NextResponse.json(
@@ -39,31 +39,31 @@ export async function POST(request) {
   }
 }
 
-//Delete coupon /api/coupon?code=couponCode
+//Xóa coupon /api/coupon?code=couponCode
 export async function DELETE(request) {
   try {
     const { userId } = getAuth(request);
     const isAdmin = await authAdmin(userId);
     if (!isAdmin) {
-      return NextResponse.json({ error: "Not authorized" }, { status: 401 });
+      return NextResponse.json({ error: "Không có quyền" }, { status: 401 });
     }
     const { searchParams } = request.nextUrl;
     const code = searchParams.get("code");
 
-    // Validate code parameter
+    //Kiểm tra tham số code
     if (!code) {
       return NextResponse.json(
-        { error: "Coupon code is required" },
+        { error: "Cần có mã coupon" },
         { status: 400 }
       );
     }
 
-    // Convert to uppercase and trim whitespace to match database (same as POST handler)
+    //Chuyển sang chữ hoa và loại bỏ khoảng trắng
     const upperCode = code.toUpperCase().trim();
 
     console.log("DELETE coupon - Looking for code:", upperCode);
 
-    // Check if coupon exists before deleting
+    //Kiểm tra coupon có tồn tại trước khi xóa
     const coupon = await prisma.coupon.findUnique({
       where: { code: upperCode },
     });
@@ -71,7 +71,7 @@ export async function DELETE(request) {
     console.log("DELETE coupon - Found coupon:", coupon ? "Yes" : "No");
 
     if (!coupon) {
-      // List all available coupons for debugging
+      //Liệt kê tất cả coupon có sẵn để debug
       const allCoupons = await prisma.coupon.findMany({
         select: { code: true },
       });
@@ -80,38 +80,37 @@ export async function DELETE(request) {
         allCoupons.map((c) => c.code)
       );
       return NextResponse.json(
-        { error: `Coupon "${upperCode}" not found` },
+        { error: `Coupon "${upperCode}" không tồn tại` },
         { status: 404 }
       );
     }
 
-    // Delete the coupon
+    //Xóa coupon
     await prisma.coupon.delete({
       where: { code: upperCode },
     });
 
     console.log("DELETE coupon - Successfully deleted:", upperCode);
-    return NextResponse.json({ message: "Coupon deleted successfully" });
+    return NextResponse.json({ message: "Xóa coupon thành công" });
   } catch (error) {
     console.error("DELETE coupon error:", error);
-    // Handle Prisma specific errors
     if (error.code === "P2025") {
-      return NextResponse.json({ error: "Coupon not found" }, { status: 404 });
+      return NextResponse.json({ error: "Coupon không tồn tại" }, { status: 404 });
     }
     return NextResponse.json(
-      { error: error.message || "Failed to delete coupon" },
+      { error: error.message || "Xóa coupon thất bại" },
       { status: 400 }
     );
   }
 }
 
-//get all coupons
+//Lấy tất cả coupon
 export async function GET(request) {
   try {
     const { userId } = getAuth(request);
     const isAdmin = await authAdmin(userId);
     if (!isAdmin) {
-      return NextResponse.json({ error: "Not authorized" }, { status: 401 });
+      return NextResponse.json({ error: "Không có quyền" }, { status: 401 });
     }
     const coupons = await prisma.coupon.findMany({});
     return NextResponse.json({ coupons });

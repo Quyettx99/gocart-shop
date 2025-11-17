@@ -11,7 +11,7 @@ export async function GET(request) {
         { 
           isSeller: false,
           hasStore: false,
-          message: "Not authenticated"
+          message: "Chưa đăng nhập"
         },
         { status: 401 }
       )
@@ -24,7 +24,7 @@ export async function GET(request) {
 
     if (!user) {
       return NextResponse.json(
-        { isSeller: false, hasStore: false, message: "User not found" },
+        { isSeller: false, hasStore: false, message: "Không tìm thấy người dùng" },
         { status: 404 }
       )
     }
@@ -33,12 +33,12 @@ export async function GET(request) {
 
     if (!store) {
       return NextResponse.json(
-        { isSeller: false, hasStore: false, message: "No store yet" },
+        { isSeller: false, hasStore: false, message: "Chưa có cửa hàng" },
         { status: 200 }
       )
     }
 
-    // Convert date fields to ISO
+    // Chuyển date sang ISO
     const storeInfo = {
       ...store,
       createdAt: store.createdAt?.toISOString(),
@@ -52,7 +52,7 @@ export async function GET(request) {
           hasStore: true,
           storeStatus: store.status,
           storeInfo,
-          message: "Store waiting for approval",
+          message: "Cửa hàng đang chờ phê duyệt",
         },
         { status: 200 }
       )
@@ -68,7 +68,7 @@ export async function GET(request) {
   } catch (error) {
     console.error(error)
     return NextResponse.json(
-      { error: "Internal Server Error" },
+      { error: "Lỗi máy chủ nội bộ" },
       { status: 500 }
     )
   }

@@ -9,40 +9,42 @@ export async function POST(request){
         const body = await request.text()
         const sig = request.headers.get('stripe-signature')
         const event = stripe.webhooks.constructEvent(body,sig,process.env.STRIPE_WEBHOOK_SECRET)
+
         const handlePaymentIntent = async(paymentIntentId,isPaid) =>{
             const session = await stripe.checkout.sessions.list({
                 payment_intent: paymentIntentId
             })
             const {orderIds,userId,appId} = session.data[0].metadata
 
-        if(appId !== 'gocart'){
-            return NextResponse.json({received: true,message:'Invalid app id'})
-        }
-        const orderIdsArray = orderIds.split(',')
+            if(appId !== 'gocart'){
+                return NextResponse.json({received: true, message:'ID ứng dụng không hợp lệ'})
+            }
 
-        if(isPaid){
-            //mark order as paid
-            await Promise.all(orderIdsArray.map(async(orderId)=>{
-                await prisma.order.update({
-                    where: {id: orderId},
-                    data: {isPaid: true}
+            const orderIdsArray = orderIds.split(',')
+
+            if(isPaid){
+                // Đánh dấu đơn hàng đã thanh toán
+                await Promise.all(orderIdsArray.map(async(orderId)=>{
+                    await prisma.order.update({
+                        where: {id: orderId},
+                        data: {isPaid: true}
+                    })
+                }))
+                // Xóa giỏ hàng của người dùng
+                await prisma.user.update({
+                    where: {id: userId},
+                    data: {cart: {}}
                 })
-            }))
-            //delete cart from user
-            await prisma.user.update({
-                where: {id: userId},
-                data: {cart: {}}
-            })
-        }else{
-            //delete order from db
-            await Promise.all(orderIdsArray.map(async(orderId)=>{
-                await prisma.order.delete({
-                    where: {id: orderId}
-                })
-            }))
+            }else{
+                // Xóa đơn hàng khỏi cơ sở dữ liệu
+                await Promise.all(orderIdsArray.map(async(orderId)=>{
+                    await prisma.order.delete({
+                        where: {id: orderId}
+                    })
+                }))
+            }
         }
 
-  }      
         switch(event.type){
             case 'payment_intent.succeeded':{
                 await handlePaymentIntent(event.data.object.id,true)
@@ -53,9 +55,10 @@ export async function POST(request){
                 break;
             }
             default:
-                console.log(`Unhandled event type ${event.type}`);
+                console.log(`Loại sự kiện chưa xử lý: ${event.type}`);
                 break;
         }
+
         return NextResponse.json({received: true})
     } catch (error) {
         console.error(error)

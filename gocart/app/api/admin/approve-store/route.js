@@ -3,14 +3,14 @@ import authAdmin from "@/middlewares/authAdmin";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
-//Approve Seller
+//Phê duyệt người bán
 export async function POST(request) {
     try {
         const {userId} = getAuth(request)
         const isAdmin = await authAdmin(userId)
 
         if(!isAdmin){
-            return NextResponse.json({error: "Not authorized"}, {status: 401})
+            return NextResponse.json({error: "Không có quyền"}, {status: 401})
         }
         const {storeId,status} = await request.json()
         if(status === 'approved'){
@@ -24,21 +24,21 @@ export async function POST(request) {
                 data: {status: "rejected"}
             })
         }
-        return NextResponse.json({message: status + ' successfully'})
+        return NextResponse.json({message: status + ' thành công'})
     } catch (error) {
         console.error(error)
         return NextResponse.json({error: error.code || error.message}, {status: 400})
     }
 }
 
-//get all pending and rejected stores
+//Lấy tất cả cửa hàng đang chờ phê duyệt và bị từ chối
 export async function GET(request) {
     try {
         const {userId} = getAuth(request)
         const isAdmin = await authAdmin(userId)
 
         if(!isAdmin){
-            return NextResponse.json({error: "Not authorized"}, {status: 401})
+            return NextResponse.json({error: "Không có quyền"}, {status: 401})
         }
 
         const stores = await prisma.store.findMany({

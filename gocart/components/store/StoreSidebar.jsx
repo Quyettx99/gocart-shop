@@ -8,12 +8,12 @@ const StoreSidebar = ({storeInfo}) => {
 
     const pathname = usePathname()
 
-    const sidebarLinks = [
-        { name: 'Dashboard', href: '/store', icon: HomeIcon },
-        { name: 'Add Product', href: '/store/add-product', icon: SquarePlusIcon },
-        { name: 'Manage Product', href: '/store/manage-product', icon: SquarePenIcon },
-        { name: 'Orders', href: '/store/orders', icon: LayoutListIcon },
-    ]
+   const sidebarLinks = [
+    { name: 'Bảng điều khiển', href: '/store', icon: HomeIcon },
+    { name: 'Thêm sản phẩm', href: '/store/add-product', icon: SquarePlusIcon },
+    { name: 'Quản lý sản phẩm', href: '/store/manage-product', icon: SquarePenIcon },
+    { name: 'Đơn hàng', href: '/store/orders', icon: LayoutListIcon },
+]
 
     return (
         <div className="inline-flex h-full flex-col gap-5 border-r border-slate-200 sm:min-w-60">

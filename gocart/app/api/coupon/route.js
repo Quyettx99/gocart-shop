@@ -2,31 +2,30 @@ import prisma from "@/lib/prisma";
 import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-
-
-//verify coupon
+//Xác thực mã giảm giá
 export async function POST(request) {
     try {
         const {userId ,has}  = getAuth(request)
         const {code} = await request.json()
         const coupon = await prisma.coupon.findUnique({
-            where:{code: code.toUpperCase(),
+            where:{
+                code: code.toUpperCase(),
                 expiresAt:{gt: new Date()}
             }
         })
         if(!coupon){
-            return NextResponse.json({error: "Coupon not found"},{status: 404})
+            return NextResponse.json({error: "Mã giảm giá không tồn tại"},{status: 404})
         }
         if(coupon.forNewUser){
             const userorders = await prisma.order.findMany({where:{userId}})
             if(userorders.length > 0){
-                return NextResponse,json({error: "Coupon vail for new users"},{status:  404})
+                return NextResponse.json({error: "Mã giảm giá chỉ áp dụng cho người dùng mới"},{status: 404})
             }
         }
         if(coupon.forMember){
             const hasPlusPlan = has({plan: 'plus'})
             if(!hasPlusPlan){
-                return NextResponse.json({error: "Coupon valid for members only"},{status: 400})
+                return NextResponse.json({error: "Mã giảm giá chỉ áp dụng cho thành viên"},{status: 400})
             }
         }
         return NextResponse.json({coupon})
