@@ -11,7 +11,7 @@ import toast from "react-hot-toast"
 
 export default function Dashboard() {
     const { getToken } = useAuth()
-    const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '$'
+    const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || 'VND'
     const router = useRouter()
 
     const [loading, setLoading] = useState(true)
@@ -24,7 +24,7 @@ export default function Dashboard() {
 
     const dashboardCardsData = [
         { title: 'Tổng sản phẩm', value: dashboardData.totalProducts, icon: ShoppingBasketIcon },
-        { title: 'Tổng doanh thu', value: currency + dashboardData.totalEarnings, icon: CircleDollarSignIcon },
+        { title: 'Tổng doanh thu', value: `${dashboardData.totalEarnings} ${currency}`, icon: CircleDollarSignIcon },
         { title: 'Tổng đơn hàng', value: dashboardData.totalOrders, icon: TagsIcon },
         { title: 'Tổng đánh giá', value: dashboardData.ratings.length, icon: StarIcon },
     ]

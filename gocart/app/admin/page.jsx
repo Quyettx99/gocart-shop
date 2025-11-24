@@ -12,7 +12,7 @@ export default function AdminDashboard() {
 
     const {getToken} = useAuth()
 
-    const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '$'
+    const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || 'VND'
 
     const [loading, setLoading] = useState(true)
     const [dashboardData, setDashboardData] = useState({
@@ -25,7 +25,7 @@ export default function AdminDashboard() {
 
     const dashboardCardsData = [
         { title: 'Tổng sản phẩm', value: dashboardData.products, icon: ShoppingBasketIcon },
-        { title: 'Doanh thu', value: currency + dashboardData.revenue, icon: CircleDollarSignIcon },
+        { title: 'Doanh thu', value: `${dashboardData.revenue} ${currency}`, icon: CircleDollarSignIcon },
         { title: 'Tổng đơn hàng', value: dashboardData.orders, icon: TagsIcon },
         { title: 'Tổng cửa hàng', value: dashboardData.stores, icon: StoreIcon },
     ]

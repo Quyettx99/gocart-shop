@@ -45,7 +45,7 @@ export default function CreateStore() {
             setMessage(
               "Cửa hàng của bạn đã được phê duyệt, bạn có thể thêm sản phẩm vào cửa hàng từ bảng điều khiển"
             );
-            setTimeout(() => router.push("/store"), 500);
+            setTimeout(() => router.push("/store"), 3000);
             break;
           case "rejected":
             setMessage(

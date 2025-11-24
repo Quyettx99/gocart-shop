@@ -12,13 +12,13 @@ export default function StoreOrders() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { getToken } = useAuth();
+  const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || "VND";
 
- 
   const orderStatusText = {
-    'ORDER_PLACED': 'Đã đặt hàng',
-    'PROCESSING': 'Đang xử lý',
-    'SHIPPED': 'Đã vận chuyển',
-    'DELIVERED': 'Đã giao hàng'
+    ORDER_PLACED: "Đã đặt hàng",
+    PROCESSING: "Đang xử lý",
+    SHIPPED: "Đã vận chuyển",
+    DELIVERED: "Đã giao hàng",
   };
 
   const fetchOrders = async () => {
@@ -107,7 +107,7 @@ export default function StoreOrders() {
                   <td className="pl-6 text-green-600">{index + 1}</td>
                   <td className="px-4 py-3">{order.user?.name}</td>
                   <td className="px-4 py-3 font-medium text-slate-800">
-                    ${order.total}
+                    {order.total} {currency}
                   </td>
                   <td className="px-4 py-3">{order.paymentMethod}</td>
                   <td className="px-4 py-3">
@@ -201,7 +201,10 @@ export default function StoreOrders() {
                     <div className="flex-1">
                       <p className="text-slate-800">{item.product?.name}</p>
                       <p>Số lượng: {item.quantity}</p>
-                      <p>Giá: ${item.price}</p>
+                      <p>
+                        Giá: {item.price}
+                        {currency}
+                      </p>
                     </div>
                   </div>
                 ))}

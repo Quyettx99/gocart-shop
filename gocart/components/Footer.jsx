@@ -153,7 +153,7 @@ const Footer = () => {
     {
       title: "SẢN PHẨM",
       links: [
-        { text: "Tai nghe nhét tai", path: "/", icon: null },
+        { text: "Tai nghe", path: "/", icon: null },
         { text: "Tai nghe chụp tai", path: "/", icon: null },
         { text: "Điện thoại", path: "/", icon: null },
         { text: "Máy tính xách tay", path: "/", icon: null },
@@ -171,9 +171,9 @@ const Footer = () => {
     {
       title: "LIÊN HỆ",
       links: [
-        { text: "+1-212-456-7890", path: "/", icon: MailIcon },
-        { text: "contact@example.com", path: "/", icon: PhoneIcon },
-        { text: "794 Francisco, 94102", path: "/", icon: MapPinIcon },
+        { text: "+84 868.686.868", path: "/contact", icon: MailIcon },
+        { text: "contact@example.com", path: "/contact", icon: PhoneIcon },
+        { text: "218 Lĩnh Nam", path: "/contact", icon: MapPinIcon },
       ],
     },
   ];
@@ -236,7 +236,7 @@ const Footer = () => {
           </div>
         </div>
         <p className="py-4 text-sm text-slate-500">
-          Bản quyền 2025 © gocart. Bảo lưu mọi quyền.
+          Bản quyền 2025 © gocart.
         </p>
       </div>
     </footer>

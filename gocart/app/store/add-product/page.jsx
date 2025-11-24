@@ -22,6 +22,7 @@ export default function StoreAddProduct() {
     const [aiUsed,setAiUsed] = useState(false)
 
     const {getToken} = useAuth()
+    const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || 'VND'
     const onChangeHandler = (e) => {
         setProductInfo({ ...productInfo, [e.target.name]: e.target.value })
     }
@@ -133,11 +134,11 @@ export default function StoreAddProduct() {
 
             <div className="flex gap-5">
                 <label htmlFor="" className="flex flex-col gap-2 ">
-                    Giá gốc ($)
+                    Giá gốc ({currency})
                     <input type="number" name="mrp" onChange={onChangeHandler} value={productInfo.mrp} placeholder="0" rows={5} className="w-full max-w-45 p-2 px-4 outline-none border border-slate-200 rounded resize-none" required />
                 </label>
                 <label htmlFor="" className="flex flex-col gap-2 ">
-                    Giá khuyến mãi ($)
+                    Giá khuyến mãi ({currency})
                     <input type="number" name="price" onChange={onChangeHandler} value={productInfo.price} placeholder="0" rows={5} className="w-full max-w-45 p-2 px-4 outline-none border border-slate-200 rounded resize-none" required />
                 </label>
             </div>

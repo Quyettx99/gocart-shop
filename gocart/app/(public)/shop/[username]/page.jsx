@@ -2,7 +2,7 @@
 import ProductCard from "@/components/ProductCard"
 import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
-import { MailIcon, MapPinIcon } from "lucide-react"
+import { MailIcon, MapPinIcon, StarIcon, ShoppingBagIcon } from "lucide-react"
 import Loading from "@/components/Loading"
 import Image from "next/image"
 import axios from "axios"
@@ -56,7 +56,36 @@ export default function StoreShop() {
                                 <MailIcon className="w-4 h-4 text-gray-500 mr-2" />
                                 <span>{storeInfo.email}</span>
                             </div>
-                           
+                        </div>
+                        
+                        {/* Store Stats */}
+                        <div className="flex flex-wrap gap-4 mt-4">
+                            {storeInfo.averageRating !== undefined && storeInfo.averageRating > 0 && (
+                                <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm">
+                                    <StarIcon className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+                                    <div>
+                                        <p className="text-sm font-semibold text-slate-800">
+                                            {typeof storeInfo.averageRating === 'number' 
+                                              ? storeInfo.averageRating.toFixed(1) 
+                                              : storeInfo.averageRating}
+                                        </p>
+                                        <p className="text-xs text-slate-500">
+                                            {storeInfo.totalRatings || 0} đánh giá
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+                            {storeInfo.totalSold !== undefined && (
+                                <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm">
+                                    <ShoppingBagIcon className="w-5 h-5 text-green-600" />
+                                    <div>
+                                        <p className="text-sm font-semibold text-slate-800">
+                                            {storeInfo.totalSold.toLocaleString()}
+                                        </p>
+                                        <p className="text-xs text-slate-500">sản phẩm đã bán</p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

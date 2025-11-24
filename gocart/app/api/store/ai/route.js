@@ -7,15 +7,15 @@ async function main(base64Image, mimeType) {
   const messages = [
     {
       role: "system",
-      content: `You are a product listing assistant for an e-commerce store.
-      Your job is to analyze an image of a product and generate structured data.
+      content: `You are a product listing assistant for an e-commerce store serving Vietnamese merchants.
+      Your job is to analyze an image of a product and generate structured data **in Vietnamese** only.
 
       Respond ONLY with raw JSON (no code block, no markdown, no explanation).
       The JSON must strictly follow this schema: 
 
       {
-        "name": string,               // Tên sản phẩm ngắn
-        "description": string         // Mô tả marketing-friendly của sản phẩm
+        "name": string,               // Tên sản phẩm ngắn bằng tiếng Việt
+        "description": string         // Mô tả marketing-friendly bằng tiếng Việt
       }`,
     },
     {
@@ -59,7 +59,10 @@ export async function POST(request) {
     const { userId } = getAuth(request);
     const isSeller = await authSeller(userId);
     if (!isSeller) {
-      return NextResponse.json({ error: "Không có quyền thực hiện" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Không có quyền thực hiện" },
+        { status: 401 }
+      );
     }
 
     const { base64Image, mimeType } = await request.json();

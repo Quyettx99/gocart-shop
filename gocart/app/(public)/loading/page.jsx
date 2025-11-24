@@ -14,7 +14,7 @@ export default function LoadingPage() {
         if (url) {
             setTimeout(() => {
                 router.push(url)
-            }, 800)
+            }, 5000)
         }
     }, [router])
 

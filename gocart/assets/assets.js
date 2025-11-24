@@ -45,7 +45,7 @@ export const categories = [
   "Tai nghe",
   "Loa",
   "Đồng hồ",
-  "Tai nghe nhét tai",
+  "Tai nghe",
   "Chuột",
   "Trang trí",
 ];

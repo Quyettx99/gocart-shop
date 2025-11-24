@@ -8,11 +8,11 @@ import { Protect, useAuth, useUser } from "@clerk/nextjs";
 import axios from "axios";
 import { fetchCart } from "@/lib/features/cart/cartSlice";
 
-const OrderSummary = ({ totalPrice, items }) => {
+const OrderSummary = ({ totalPrice, items, stockStatus = {} }) => {
   const { user } = useUser();
   const { getToken } = useAuth();
   const dispatch = useDispatch();
-  const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || "$";
+  const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || "VND";
 
   const router = useRouter();
   const addressList = useSelector((state) => state.address.list);
@@ -22,6 +22,11 @@ const OrderSummary = ({ totalPrice, items }) => {
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [couponCodeInput, setCouponCodeInput] = useState("");
   const [coupon, setCoupon] = useState("");
+
+  // Kiểm tra xem có sản phẩm hết hàng không
+  const hasOutOfStockItems = items.some(
+    (item) => item.isOutOfStock === true || stockStatus[item.id]?.inStock === false
+  );
 
   const handleCouponCode = async (event) => {
     event.preventDefault();
@@ -48,6 +53,11 @@ const OrderSummary = ({ totalPrice, items }) => {
       if (!user) {
         return toast("Vui lòng đăng nhập để đặt hàng");
       }
+      if (hasOutOfStockItems) {
+        return toast.error(
+          "Vui lòng xóa các sản phẩm hết hàng khỏi giỏ hàng trước khi đặt hàng"
+        );
+      }
       if (!selectedAddress) {
         return toast("Vui lòng chọn địa chỉ giao hàng");
       }
@@ -67,6 +77,8 @@ const OrderSummary = ({ totalPrice, items }) => {
 
       if (paymentMethod === "STRIPE") {
         window.location.href = data.session.url;
+      } else if (paymentMethod === "VNPAY") {
+        window.location.href = data.paymentUrl;
       } else {
         toast.success(data.message);
         router.push("/orders");
@@ -114,7 +126,8 @@ const OrderSummary = ({ totalPrice, items }) => {
         {selectedAddress ? (
           <div className="flex gap-2 items-center">
             <p>
-              {selectedAddress.name}, {selectedAddress.city}, {selectedAddress.state}, {selectedAddress.zip}
+              {selectedAddress.name}, {selectedAddress.city},{" "}
+              {selectedAddress.state}, {selectedAddress.zip}
             </p>
             <SquarePenIcon
               onClick={() => setSelectedAddress(null)}
@@ -127,12 +140,15 @@ const OrderSummary = ({ totalPrice, items }) => {
             {addressList.length > 0 && (
               <select
                 className="border border-slate-400 p-2 w-full my-3 outline-none rounded"
-                onChange={(e) => setSelectedAddress(addressList[e.target.value])}
+                onChange={(e) =>
+                  setSelectedAddress(addressList[e.target.value])
+                }
               >
                 <option value="">Chọn địa chỉ</option>
                 {addressList.map((address, index) => (
                   <option key={index} value={index}>
-                    {address.name}, {address.city}, {address.state}, {address.zip}
+                    {address.name}, {address.city}, {address.state},{" "}
+                    {address.zip}
                   </option>
                 ))}
               </select>
@@ -155,12 +171,18 @@ const OrderSummary = ({ totalPrice, items }) => {
             {coupon && <p>Mã giảm giá:</p>}
           </div>
           <div className="flex flex-col gap-1 font-medium text-right">
-            <p>{currency}{totalPrice.toLocaleString()}</p>
             <p>
-              <Protect plan={"plus"} fallback={`${currency}5`}>Miễn phí</Protect>
+              {totalPrice.toLocaleString()} {currency}
+            </p>
+            <p>
+              <Protect plan={"plus"} fallback={`5 ${currency}`}>
+                Miễn phí
+              </Protect>
             </p>
             {coupon && (
-              <p>{`-${currency}${((coupon.discount / 100) * totalPrice).toFixed(2)}`}</p>
+              <p>{`-${((coupon.discount / 100) * totalPrice).toFixed(
+                2
+              )} ${currency}`}</p>
             )}
           </div>
         </div>
@@ -168,7 +190,9 @@ const OrderSummary = ({ totalPrice, items }) => {
         {!coupon ? (
           <form
             onSubmit={(e) =>
-              toast.promise(handleCouponCode(e), { loading: "Đang kiểm tra mã giảm giá..." })
+              toast.promise(handleCouponCode(e), {
+                loading: "Đang kiểm tra mã giảm giá...",
+              })
             }
             className="flex justify-center gap-3 mt-3"
           >
@@ -185,7 +209,12 @@ const OrderSummary = ({ totalPrice, items }) => {
           </form>
         ) : (
           <div className="w-full flex items-center justify-center gap-2 text-xs mt-2">
-            <p>Code: <span className="font-semibold ml-1">{coupon.code.toUpperCase()}</span></p>
+            <p>
+              Code:{" "}
+              <span className="font-semibold ml-1">
+                {coupon.code.toUpperCase()}
+              </span>
+            </p>
             <p>{coupon.description}</p>
             <XIcon
               size={18}
@@ -201,30 +230,48 @@ const OrderSummary = ({ totalPrice, items }) => {
         <p className="font-medium text-right">
           <Protect
             plan={"plus"}
-            fallback={`${currency}${
+            fallback={`${
               coupon
-                ? ((totalPrice + 5 - (coupon.discount / 100) * totalPrice).toFixed(2))
+                ? (
+                    totalPrice +
+                    5 -
+                    (coupon.discount / 100) * totalPrice
+                  ).toFixed(2)
                 : (totalPrice + 5).toLocaleString()
-            }`}
+            } ${currency}`}
           >
-            {currency}
             {coupon
               ? (totalPrice - (coupon.discount / 100) * totalPrice).toFixed(2)
-              : totalPrice.toLocaleString()}
+              : totalPrice.toLocaleString()}{" "}
+            {currency}
           </Protect>
         </p>
       </div>
+
+      {hasOutOfStockItems && (
+        <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+          <p className="font-medium">Cảnh báo:</p>
+          <p>Giỏ hàng của bạn có sản phẩm đã hết hàng. Vui lòng xóa các sản phẩm hết hàng trước khi đặt hàng.</p>
+        </div>
+      )}
 
       <button
         onClick={(e) =>
           toast.promise(handlePlaceOrder(e), { loading: "Đang đặt hàng..." })
         }
-        className="w-full bg-slate-700 text-white py-2.5 rounded hover:bg-slate-900 active:scale-95 transition-all"
+        disabled={hasOutOfStockItems}
+        className={`w-full py-2.5 rounded transition-all ${
+          hasOutOfStockItems
+            ? "bg-slate-400 text-white cursor-not-allowed"
+            : "bg-slate-700 text-white hover:bg-slate-900 active:scale-95"
+        }`}
       >
-        Đặt hàng
+        {hasOutOfStockItems ? "Không thể đặt hàng" : "Đặt hàng"}
       </button>
 
-      {showAddressModal && <AddressModal setShowAddressModal={setShowAddressModal} />}
+      {showAddressModal && (
+        <AddressModal setShowAddressModal={setShowAddressModal} />
+      )}
     </div>
   );
 };
