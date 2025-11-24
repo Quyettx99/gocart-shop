@@ -15,6 +15,7 @@ export default function AdminCoupons() {
     code: "",
     description: "",
     discount: "",
+    usageLimit: "",
     forNewUser: false,
     forMember: false,
     isPublic: false,
@@ -109,6 +110,15 @@ export default function AdminCoupons() {
             onChange={handleChange}
             required
           />
+          <input
+            type="number"
+            placeholder="Giới hạn"
+            className="w-full mt-2 p-2 border border-slate-200 outline-slate-400 rounded-md"
+            name="usageLimit"
+            value={newCoupon.usageLimit}
+            onChange={handleChange}
+            min={3}
+          />
         </div>
         <input
           type="text"
@@ -199,6 +209,9 @@ export default function AdminCoupons() {
                   Thành viên
                 </th>
                 <th className="py-3 px-4 text-left font-semibold text-slate-600">
+                  Lượt dùng
+                </th>
+                <th className="py-3 px-4 text-left font-semibold text-slate-600">
                   Thao tác
                 </th>
               </tr>
@@ -223,6 +236,10 @@ export default function AdminCoupons() {
                   </td>
                   <td className="py-3 px-4 text-slate-800">
                     {coupon.forMember ? "Có" : "Không"}
+                  </td>
+                  <td className="py-3 px-4 text-slate-800">
+                    {coupon.usedCount} /{" "}
+                    {coupon.usageLimit ? coupon.usageLimit : "∞"}
                   </td>
                   <td className="py-3 px-4 text-slate-800">
                     <DeleteIcon

@@ -16,6 +16,9 @@ export async function POST(request) {
         if(!coupon){
             return NextResponse.json({error: "Mã giảm giá không tồn tại"},{status: 404})
         }
+        if(coupon.usageLimit !== null && coupon.usedCount >= coupon.usageLimit){
+            return NextResponse.json({error: "Mã giảm giá hêt lượt sử dụng"},{status: 400})
+        }
         if(coupon.forNewUser){
             const userorders = await prisma.order.findMany({where:{userId}})
             if(userorders.length > 0){

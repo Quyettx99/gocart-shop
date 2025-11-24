@@ -15,6 +15,11 @@ export async function POST(request) {
     const { coupon } = await request.json();
     //Loại bỏ khoảng trắng và chuyển thành chữ hoa để đồng nhất
     coupon.code = coupon.code.trim().toUpperCase();
+    if(coupon.usageLimit){
+      coupon.usageLimit = parseInt(coupon.usageLimit)
+    }else{
+      coupon.usageLimit = null;
+    }
     await prisma.coupon
       .create({
         data: coupon,

@@ -190,6 +190,14 @@ export async function POST(request) {
       });
       return NextResponse.json({ session });
     }
+    if (couponCode) {
+      await prisma.coupon.update({
+        where: { code: couponCode },
+        data: {
+          usedCount: { increment: 1 },
+        },
+      });
+    }
 
     //Xóa giỏ hàng
     await prisma.user.update({

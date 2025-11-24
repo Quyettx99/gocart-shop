@@ -139,6 +139,9 @@ model Coupon {
     isPublic    Boolean
     expiresAt   DateTime
     createdAt   DateTime @default(now())
+
+    usageLimit  Int?     
+    usedCount   Int      @default(0) // Số lần đã sử dụng
 }
 
 // Required for creating a Store: userId, name, username, email, contact, logo, description, address (optional: , status, isActive)
