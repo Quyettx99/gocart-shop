@@ -24,7 +24,7 @@ export default function Dashboard() {
 
     const dashboardCardsData = [
         { title: 'Tổng sản phẩm', value: dashboardData.totalProducts, icon: ShoppingBasketIcon },
-        { title: 'Tổng doanh thu', value: `${dashboardData.totalEarnings} ${currency}`, icon: CircleDollarSignIcon },
+        { title: 'Tổng doanh thu', value: `${dashboardData.totalEarnings.toLocaleString('vi-VN')} ${currency}`, icon: CircleDollarSignIcon },
         { title: 'Tổng đơn hàng', value: dashboardData.totalOrders, icon: TagsIcon },
         { title: 'Tổng đánh giá', value: dashboardData.ratings.length, icon: StarIcon },
     ]

@@ -68,14 +68,14 @@ export async function POST(request) {
         where: { id: item.id },
         select: { id: true, name: true, inStock: true },
       });
-      
+
       if (!product) {
         return NextResponse.json(
           { error: `Sản phẩm với ID ${item.id} không tồn tại` },
           { status: 404 }
         );
       }
-      
+
       if (!product.inStock) {
         outOfStockProducts.push(product.name || product.id);
       }
@@ -85,7 +85,9 @@ export async function POST(request) {
     if (outOfStockProducts.length > 0) {
       return NextResponse.json(
         {
-          error: `Các sản phẩm sau đã hết hàng: ${outOfStockProducts.join(", ")}. Vui lòng xóa chúng khỏi giỏ hàng.`,
+          error: `Các sản phẩm sau đã hết hàng: ${outOfStockProducts.join(
+            ", "
+          )}. Vui lòng xóa chúng khỏi giỏ hàng.`,
         },
         { status: 400 }
       );
@@ -117,7 +119,7 @@ export async function POST(request) {
         total -= (total * coupon.discount) / 100;
       }
       if (!isPlusMember && !isShippingFeeAdded) {
-        total += 5;
+        total += 20000;
         isShippingFeeAdded = true;
       }
       fullAmount += parseFloat(total.toFixed(2));

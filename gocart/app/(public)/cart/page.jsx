@@ -155,7 +155,7 @@ export default function Cart() {
                         </p>
                         <p>
                           {item.price > 0
-                            ? `${item.price} ${currency}`
+                            ? `${item.price.toLocaleString('vi-VN')} ${currency}`
                             : "Giá không khả dụng"}
                         </p>
                         {isOutOfStock && (
@@ -177,7 +177,7 @@ export default function Cart() {
                       ) : (
                         `${(
                           item.price * item.quantity
-                        ).toLocaleString()} ${currency}`
+                        ).toLocaleString('vi-VN')} ${currency}`
                       )}
                     </td>
                     <td className="text-center max-md:hidden">

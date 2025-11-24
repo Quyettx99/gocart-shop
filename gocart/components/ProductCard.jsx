@@ -41,7 +41,7 @@ const ProductCard = ({ product }) => {
           </div>
         </div>
         <p>
-          {product.price} {currency}
+          {product.price.toLocaleString("vi-VN")} {currency}
         </p>
       </div>
     </Link>

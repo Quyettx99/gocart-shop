@@ -25,7 +25,8 @@ const OrderSummary = ({ totalPrice, items, stockStatus = {} }) => {
 
   // Kiểm tra xem có sản phẩm hết hàng không
   const hasOutOfStockItems = items.some(
-    (item) => item.isOutOfStock === true || stockStatus[item.id]?.inStock === false
+    (item) =>
+      item.isOutOfStock === true || stockStatus[item.id]?.inStock === false
   );
 
   const handleCouponCode = async (event) => {
@@ -175,7 +176,10 @@ const OrderSummary = ({ totalPrice, items, stockStatus = {} }) => {
               {totalPrice.toLocaleString()} {currency}
             </p>
             <p>
-              <Protect plan={"plus"} fallback={`5 ${currency}`}>
+              <Protect
+                plan={"plus"}
+                fallback={`${(20000).toLocaleString("vi-VN")} ${currency}`}
+              >
                 Miễn phí
               </Protect>
             </p>
@@ -234,10 +238,10 @@ const OrderSummary = ({ totalPrice, items, stockStatus = {} }) => {
               coupon
                 ? (
                     totalPrice +
-                    5 -
+                    20000 -
                     (coupon.discount / 100) * totalPrice
                   ).toFixed(2)
-                : (totalPrice + 5).toLocaleString()
+                : (totalPrice + 20000).toLocaleString("vi-VN")
             } ${currency}`}
           >
             {coupon
@@ -251,7 +255,10 @@ const OrderSummary = ({ totalPrice, items, stockStatus = {} }) => {
       {hasOutOfStockItems && (
         <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
           <p className="font-medium">Cảnh báo:</p>
-          <p>Giỏ hàng của bạn có sản phẩm đã hết hàng. Vui lòng xóa các sản phẩm hết hàng trước khi đặt hàng.</p>
+          <p>
+            Giỏ hàng của bạn có sản phẩm đã hết hàng. Vui lòng xóa các sản phẩm
+            hết hàng trước khi đặt hàng.
+          </p>
         </div>
       )}
 

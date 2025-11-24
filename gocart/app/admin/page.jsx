@@ -25,7 +25,7 @@ export default function AdminDashboard() {
 
     const dashboardCardsData = [
         { title: 'Tổng sản phẩm', value: dashboardData.products, icon: ShoppingBasketIcon },
-        { title: 'Doanh thu', value: `${dashboardData.revenue} ${currency}`, icon: CircleDollarSignIcon },
+        { title: 'Doanh thu', value: `${parseFloat(dashboardData.revenue || 0).toLocaleString('vi-VN')} ${currency}`, icon: CircleDollarSignIcon },
         { title: 'Tổng đơn hàng', value: dashboardData.orders, icon: TagsIcon },
         { title: 'Tổng cửa hàng', value: dashboardData.stores, icon: StoreIcon },
     ]
